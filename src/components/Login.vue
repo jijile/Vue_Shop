@@ -31,8 +31,8 @@ export default {
   data () {
     return {
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       // 表单验证对象
       loginFormRules: {
@@ -55,8 +55,18 @@ export default {
       this.$refs.loginFormRef.resetFields()
     },
     login () {
-      this.$refs.loginFormRef.validate(valid => {
-        console.log(valid)
+      this.$refs.loginFormRef.validate(async valid => {
+        // eslint-disable-next-line no-useless-return
+        if (!valid) return
+        var { data: res } = await this.$http.post('login', this.loginForm)
+        if (res.meta.status !== 200) return this.$message.error('登录失败')
+        window.sessionStorage.setItem('token', res.data.token)
+        // 登录成功
+        this.$message({
+          message: '登录成功',
+          type: 'sucess'
+        })
+        this.$router.push('/home')
       })
     }
   }
