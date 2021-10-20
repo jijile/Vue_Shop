@@ -58,14 +58,14 @@
         <el-dialog
             title="提示"
             :visible.sync="setRightDialogVisible"
-            width="50%">
+            width="50%" @close='setRightDialogClosed'>
             <!-- <span>这是一段信息</span> -->
             <!-- 树形控件 -->
-            <el-tree :data="rightsList" :props="treeProps" show-checkbox node-key='id' default-expand-all :default-checked-keys='defKeys'></el-tree>
+            <el-tree :data="rightsList" :props="treeProps" ref="treeRef" show-checkbox node-key='id' default-expand-all :default-checked-keys='defKeys'></el-tree>
 
             <span slot="footer" class="dialog-footer">
                 <el-button @click="setRightDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
+                <el-button type="primary" @click="allotRights">确 定</el-button>
             </span>
         </el-dialog>
 </div>
@@ -87,7 +87,9 @@ export default {
         children: 'children'
       },
       //   默认选中的数组
-      defKeys: []
+      defKeys: [],
+
+      roleID: ''
     }
   },
   created () {
@@ -115,13 +117,15 @@ export default {
       role.children = res.data
     },
     async showSetRightDialog (role) {
-    // 获取所有权限数据
+      this.roleID = role.id
+      // 获取所有权限数据
       const { data: res } = await this.$http.get('rights/' + 'tree')
       if (res.meta.status !== 200) return this.$message.error('获取权限列表失败')
       //  获取到权限数据保存在data
       this.rightsList = res.data
       console.log(this.rightsList)
       this.getLeafKeys(role, this.defKeys)
+      // 显示之前设置本身自由的权限
       this.setRightDialogVisible = true
     },
     // 通过递归形式获取所有三级权限的ID
@@ -133,6 +137,25 @@ export default {
       node.children.forEach(item => {
         this.getLeafKeys(item, arr)
       })
+    },
+    // 监听权限对话框关闭时是件
+    setRightDialogClosed () {
+      this.defKeys = []
+    },
+    // 点击确认分配的权限
+    async allotRights (roleID) {
+      const keysArr = [...this.$refs.treeRef.getCheckedKeys(), ...this.$refs.treeRef.getHalfCheckedKeys()]
+      const keyStr = keysArr.join(',')
+      // console.log(keyStr)
+      const { data: res } = await this.$http.post(`roles/${this.roleID}/rights`, {
+        rids: keyStr
+      }).catch(err => err)
+      if (res.meta.status !== 200) return this.$message.error('请求失败')
+      console.log(res.data)
+      this.$message.success('授权成功')
+      // 刷新列表
+      this.getRolesList()
+      this.setRightDialogVisible = false
     }
   }
 }
