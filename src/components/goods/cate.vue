@@ -48,12 +48,11 @@
         <el-dialog
         title="添加分类"
         :visible.sync="addCateDialogVisible"
-        width="50%"
-        >
+        width="50%" @close="addCateDialogClosed">
         <!-- 添加分类表单 -->
         <el-form :model="addCateForm" :rules="addCateFormRules" ref="addCateFormRef" label-width="100px">
-            <el-form-item label="分类名称" prop="cate_name">
-                <el-input v-model="addCateForm.cate_name"></el-input>
+            <el-form-item label="分类名称" prop="cat_name">
+                <el-input v-model="addCateForm.cat_name"></el-input>
             </el-form-item>
              <el-form-item label="父级分类">
                 <el-cascader
@@ -68,7 +67,7 @@
             <el-button @click="addCateDialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="addCateCommit">确 定</el-button>
         </span>
-</el-dialog>
+        </el-dialog>
     </div>
 </template>
 
@@ -112,15 +111,15 @@ export default {
       addCateDialogVisible: false,
       // 添加分类表单的model
       addCateForm: {
-        cate_name: '',
+        cat_name: '',
         // 父分类ID
-        cate_pid: 0,
+        cat_pid: 0,
         // 添加分类的等级，默认是一级分类
-        cate_level: 0
+        cat_level: 0
       },
       //  添加分类表单你的验证规则
       addCateFormRules: {
-        cate_name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }]
+        cat_name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }]
       },
       //   父级分类列表
       parentCateList: [],
@@ -179,19 +178,30 @@ export default {
       //   如果selectedKeys.length>0说明选中了父级分类，反之则说明没有选择任何父级分类
       if (this.selectedKeys.length > 0) {
         // 父级分类的ID
-        this.addCateForm.cate_pid = this.selectedKeys[this.selectedKeys.length - 1]
+        this.addCateForm.cat_pid = parseInt(this.selectedKeys[this.selectedKeys.length - 1])
         // 当前分类等级赋值
-        this.addCateForm.cate_level = this.selectedKeys.length
+        this.addCateForm.cat_level = this.selectedKeys.length
       } else {
         //   父级分类的ID
-        this.addCateForm.cate_pid = 0
+        this.addCateForm.cat_pid = 0
         // 父级分来的等级
-        this.addCateForm.cate_level = 0
+        this.addCateForm.cat_level = 0
       }
     },
     // 提交父级分类
     addCateCommit () {
       console.log(this.addCateForm)
+      // 关闭对话框
+      this.addCateDialogVisible = false
+    },
+    // 监听关闭表单事件
+    addCateDialogClosed () {
+      // 重置表单
+      this.$refs.addCateFormRef.resetFields()
+      // 重置数组
+      this.selectedKeys = []
+      this.addCateForm.cat_pid = 0
+      this.addCateForm.cat_level = 0
     }
   }
 }
