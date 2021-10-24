@@ -10,7 +10,7 @@ import TreeTable from 'vue-table-with-tree-grid'
 
 // 导入axios
 import axios from 'axios'
-axios.defaults.baseURL = 'http://121.40.154.75:8888/api/private/v1/'
+axios.defaults.baseURL = 'http://120.27.247.79:8888/api/private/v1/'
 axios.interceptors.request.use(config => {
   // 为请求头添加验证字段
   config.headers.Authorization = window.sessionStorage.getItem('token')
