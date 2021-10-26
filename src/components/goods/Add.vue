@@ -28,7 +28,7 @@
         </el-steps>
         <!-- tab栏区域 -->
         <el-form :model="addForm" :rules="addFormRules" ref="raddFormRef" label-width="100px" class="demo-ruleForm" label-position='top'>
-          <el-tabs v-model="activeIndex" :tab-position="'left'">
+          <el-tabs v-model="activeIndex" :tab-position="'left'" :before-leave='beforeTabLeave' @tab-click='tabSelected'>
           <el-tab-pane label="基本参数" name="0">
             <el-form-item label="商品名称" prop="goods_name">
               <el-input v-model="addForm.goods_name"></el-input>
@@ -42,14 +42,49 @@
             <el-form-item label="商品数量" prop="goods_number">
               <el-input v-model="addForm.goods_number" type="number"></el-input>
             </el-form-item>
+            <el-form-item label="商品分类" prop="goods_cat">
+              <el-cascader
+              v-model="addForm.goods_cat"
+              :options="catesList"
+              :props="{ expandTrigger: 'hover', ...cateProps }"
+              @change="handleChange"></el-cascader>
+            </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品参数" name="1">商品参数</el-tab-pane>
-          <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
-          <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
+          <el-tab-pane label="商品参数" name="1">
+            <el-form-item :key="item.attr_id" :label="item.attr_name" v-for="(item) in manyTableData">
+              <!-- 复选框组 -->
+              <el-checkbox-group v-model="item.attr_vals">
+                <el-checkbox :key="index" :label="cb" v-for="(cb, index) in item.attr_vals" border></el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="商品属性" name="2">
+            <el-form-item :key="item.attr_id" :label="item.attr_name" v-for="(item) in onlyTableData">
+              <el-input v-model="item.attr_vals"></el-input>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="商品图片" name="3">
+            <el-upload
+              action="http://120.27.247.79:8888/api/private/v1/upload"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              list-type="picture" :headers='headersObj' :on-success='handleSuccess'>
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            </el-upload>
+          </el-tab-pane>
           <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
         </el-tabs>
         </el-form>
       </el-card>
+      <!-- 图片预览对话框 -->
+      <el-dialog
+        title="图片预览"
+        :visible.sync="previewVisible"
+        width="50%"
+        :before-close="handleClose">
+          <img :src="previewPath" alt="" class="previewImg">
+      </el-dialog>
     </div>
 </template>
 
@@ -62,7 +97,9 @@ export default {
         goods_name: '',
         goods_price: 0,
         goods_weigh: 0,
-        goods_number: 0
+        goods_number: 0,
+        goods_cat: [],
+        pics: []
       },
       addFormRules: {
         goods_name: [{
@@ -84,9 +121,32 @@ export default {
           required: true,
           message: '请输入商品名称',
           trigger: 'blur'
+        }],
+        goods_cat: [{
+          required: true,
+          message: '请选择商品分类',
+          trigger: 'blur'
         }]
 
-      }
+      },
+      // 选中的item
+      selectedOptions: [],
+      catesList: [],
+      cateProps: {
+        label: 'cat_name',
+        value: 'cat_id',
+        children: 'children'
+      },
+      // 动态参数列表数据
+      manyTableData: [],
+      onlyTableData: [],
+      uploadURL: 'http://120.27.247.79:8888/api/private/v1/upload',
+      // 图片上传请求头对象
+      headersObj: { Authorization: window.sessionStorage.getItem('token') },
+      // 预览图片url
+      previewPath: '',
+      // 是否隐藏对话框
+      previewVisible: false
     }
   },
   created () {
@@ -99,10 +159,89 @@ export default {
       if (res.meta.status !== 200) return this.$message.error('获取商品分类数据失败！')
       this.$message.success('获取商品分类成功！')
       this.catesList = res.data
+      console.log(this.catesList)
+    },
+    // 级联选择器选中项变化触发函数
+    handleChange () {
+      console.log(this.addForm.goods_cat)
+      if (this.addForm.goods_cat.length !== 3) this.addForm.goods_cat = []
+    },
+    beforeTabLeave (activeName, oldActiveName) {
+      // console.log(activeName + oldActiveName)
+      if (oldActiveName === '0' && this.addForm.goods_cat.length !== 3) {
+        this.$message.error('请选择分类')
+        return false
+      }
+    },
+    async tabSelected () {
+      // console.log(this.activeIndex)
+      if (this.activeIndex === '1') {
+        // 说明访问动态参数面板
+        const { data: res } = await this.$http.get('categories/73/attributes', { params: { sel: 'many' } })
+        if (res.meta.status !== 200) return this.$message.error('获取动态参数列表失败！')
+        // 分割字符串成数组然后重新赋值给key
+        res.data.forEach(item => {
+          item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split('')
+        })
+        this.manyTableData = res.data
+        console.log('动态参数', res.data)
+      } else if (this.activeIndex === '2') {
+        // 访问静态属性面板
+        const { data: res } = await this.$http.get('categories/73/attributes', { params: { sel: 'only' } })
+        if (res.meta.status !== 200) return this.$message.error('获取动态参数列表失败！')
+        this.onlyTableData = res.data
+        console.log('静态属性', this.onlyTableData)
+      }
+    },
+    // 处理图片预览
+    handlePreview (file) {
+      // console.log(file)
+      // 赋值url
+      this.previewPath = file.response.data.url
+      this.previewVisible = true
+    },
+    // 删除图片
+    handleRemove (file) {
+      // console.log(file)
+      const fileTmepPath = file.response.data.tmp_path
+      // 去pics数组总查找这个路径
+      const index = this.addForm.pics.findIndex((value, index, arr) => {
+        return value.pic === fileTmepPath
+      })
+      // 从数组中删除这个对象
+      this.addForm.pics.splice(index, 1)
+      console.log(this.addForm)
+    },
+    // 监听图片上传成功
+    handleSuccess (response) {
+      console.log(response)
+      // 拼接一个图片信息对象
+      const picInfo = { pic: response.data.tmp_path }
+      // 将图片信息对象push到pics数组
+      this.addForm.pics.push(picInfo)
+      console.log(this.addForm)
+    },
+    // 关闭图片预览对话框事件
+    handleClose () {
+      this.previewVisible = false
+    }
+  },
+  computed: {
+    cateID () {
+      if (this.addForm.goods_cat.length === 3) {
+        return this.addForm.goods_cat[2]
+      }
+      return null
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
+.el-checkbox {
+  margin: 0 10px 0 0;
+}
+.previewImg {
+  width: 100%;
+}
 </style>
