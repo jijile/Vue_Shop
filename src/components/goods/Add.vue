@@ -27,7 +27,7 @@
           <el-step title="完成"></el-step>
         </el-steps>
         <!-- tab栏区域 -->
-        <el-form :model="addForm" :rules="addFormRules" ref="raddFormRef" label-width="100px" class="demo-ruleForm" label-position='top'>
+        <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" class="demo-ruleForm" label-position='top'>
           <el-tabs v-model="activeIndex" :tab-position="'left'" :before-leave='beforeTabLeave' @tab-click='tabSelected'>
           <el-tab-pane label="基本参数" name="0">
             <el-form-item label="商品名称" prop="goods_name">
@@ -73,7 +73,11 @@
               <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
             </el-upload>
           </el-tab-pane>
-          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <!-- 富文本编辑器组件 -->
+            <quill-editor v-model="addForm.goods_introduce"></quill-editor>
+            <el-button type="primary" class="btnAdd" @click="add">添加商品</el-button>
+          </el-tab-pane>
         </el-tabs>
         </el-form>
       </el-card>
@@ -89,6 +93,7 @@
 </template>
 
 <script>
+import _ from 'lodash'
 export default {
   data () {
     return {
@@ -99,7 +104,10 @@ export default {
         goods_weigh: 0,
         goods_number: 0,
         goods_cat: [],
-        pics: []
+        pics: [],
+        goods_introduce: '',
+        attrs: []
+
       },
       addFormRules: {
         goods_name: [{
@@ -189,6 +197,9 @@ export default {
         // 访问静态属性面板
         const { data: res } = await this.$http.get('categories/73/attributes', { params: { sel: 'only' } })
         if (res.meta.status !== 200) return this.$message.error('获取动态参数列表失败！')
+        res.data.forEach(item => {
+          item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split('')
+        })
         this.onlyTableData = res.data
         console.log('静态属性', this.onlyTableData)
       }
@@ -224,6 +235,70 @@ export default {
     // 关闭图片预览对话框事件
     handleClose () {
       this.previewVisible = false
+    },
+    // 添加商品
+    add () {
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) {
+          return this.$message.error('请填写必要的表单项目')
+        }
+        // 添加
+        // 为了防止在转换this.addForm.goods_cat为字符串时候和三级选择器的v-model绑定相冲突需要深拷贝this.addForm
+        const form = _.cloneDeep(this.addForm)
+        // 因为接口API需要字符串所以把数组转换为字符串
+        form.goods_cat = form.goods_cat.join(',')
+
+        this.manyTableData.forEach(item => {
+          const attr = { attr_id: item.attr_id, attr_value: item.attr_vals.join(' ') }
+          this.addForm.attrs.push(attr)
+        })
+
+        this.onlyTableData.forEach(item => {
+          const attr = { attr_id: item.attr_id, attr_value: item.attr_vals.join(' ') }
+          this.addForm.attrs.push(attr)
+        })
+        form.attrs = this.addForm.attrs
+        // 发起添加商品请求
+        const { data: res } = await this.$http.post('goods', form)
+        if (res.meta.status !== 201) return this.$message.error('添加商品失败')
+        this.$message.success('添加商品成功')
+        // 跳转到列表页
+        this.$router.push('/goods')
+      })
+    },
+    // 深拷贝
+    deepClone (target) {
+      // 定义变量防止循环引用
+      let result
+      // 如果当前拷贝是对象
+      if (typeof target === 'object') {
+        // 如果是数组
+        if (Array.isArray(target)) {
+          // 将result赋值为一个数组，并且遍历target
+          result = []
+          target.forEach(item => {
+            // 递归克隆每一项
+            result.push(this.deepClone(item))
+          })
+          // 如果是null直接赋值
+        } else if (target === null) {
+          result = null
+          // 如果是RegExp 正则表达式对象，直接赋值
+        } else if (target.constructor === RegExp) {
+          result = RegExp
+        } else {
+          // 普通对象，直接for in循环 递归赋值
+          result = {}
+          for (const key in target) {
+            result[key] = this.deepClone(target.key)
+          }
+        }
+      } else {
+        // 不是对象就直接赋值
+        result = target
+      }
+      // 返回最终结果
+      return result
     }
   },
   computed: {
@@ -243,5 +318,8 @@ export default {
 }
 .previewImg {
   width: 100%;
+}
+.btnAdd {
+  margin-top: 15px;
 }
 </style>
