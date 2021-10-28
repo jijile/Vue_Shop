@@ -3373,6 +3373,21 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
+echarts.js@^3.0.0-beta3:
+  version "3.0.0-beta3"
+  resolved "https://registry.nlark.com/echarts.js/download/echarts.js-3.0.0-beta3.tgz#7da2041524dd7fadeeae4a212a9864caed899367"
+  integrity sha1-faIEFSTdf63urkohKphkyu2Jk2c=
+  dependencies:
+    zrenderjs "3.0.0-beta5"
+
+echarts@^5.2.1:
+  version "5.2.1"
+  resolved "https://registry.nlark.com/echarts/download/echarts-5.2.1.tgz?cache=0&sync_timestamp=1632191301834&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fecharts%2Fdownload%2Fecharts-5.2.1.tgz#bd58ec011cd82def4a714e4038ef4b73b8417bc3"
+  integrity sha1-vVjsARzYLe9KcU5AOO9Lc7hBe8M=
+  dependencies:
+    tslib "2.3.0"
+    zrender "5.2.1"
+
 ee-first@1.1.1:
   version "1.1.1"
   resolved "http://registry.npm.taobao.org/ee-first/download/ee-first-1.1.1.tgz"
@@ -5424,11 +5439,6 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.npm.taobao.org/lines-and-columns/download/lines-and-columns-1.1.6.tgz"
   integrity sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=
 
-loadash@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npm.taobao.org/loadash/download/loadash-1.0.0.tgz#b92e54d809f3c225f4f9a9cfbaeae5b56de1ca9f"
-  integrity sha1-uS5U2AnzwiX0+anPuurltW3hyp8=
-
 loader-fs-cache@^1.0.0:
   version "1.0.3"
   resolved "https://registry.npm.taobao.org/loader-fs-cache/download/loader-fs-cache-1.0.3.tgz?cache=0&sync_timestamp=1584820647539&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Floader-fs-cache%2Fdownload%2Floader-fs-cache-1.0.3.tgz"
@@ -5528,12 +5538,7 @@ lodash.uniq@^4.5.0:
   resolved "http://registry.npm.taobao.org/lodash.uniq/download/lodash.uniq-4.5.0.tgz"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
-lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.3, lodash@^4.2.0:
-  version "4.17.21"
-  resolved "https://registry.npm.taobao.org/lodash/download/lodash-4.17.21.tgz"
-  integrity sha1-Z5WRxWTDv/quhFTPCz3zcMPWkRw=
-
-lodash@^4.17.21:
+lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.3, lodash@^4.2.0:
   version "4.17.21"
   resolved "https://registry.npm.taobao.org/lodash/download/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha1-Z5WRxWTDv/quhFTPCz3zcMPWkRw=
@@ -8254,6 +8259,11 @@ tsconfig-paths@^3.11.0:
     minimist "^1.2.0"
     strip-bom "^3.0.0"
 
+tslib@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.nlark.com/tslib/download/tslib-2.3.0.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ftslib%2Fdownload%2Ftslib-2.3.0.tgz#803b8cdab3e12ba581a4ca41c8839bbb0dacb09e"
+  integrity sha1-gDuM2rPhK6WBpMpByIObuw2ssJ4=
+
 tslib@^1.9.0:
   version "1.14.1"
   resolved "https://registry.nlark.com/tslib/download/tslib-1.14.1.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ftslib%2Fdownload%2Ftslib-1.14.1.tgz"
@@ -8988,3 +8998,15 @@ yorkie@^2.0.0:
     is-ci "^1.0.10"
     normalize-path "^1.0.0"
     strip-indent "^2.0.0"
+
+zrender@5.2.1:
+  version "5.2.1"
+  resolved "https://registry.nlark.com/zrender/download/zrender-5.2.1.tgz#5f4bbda915ba6d412b0b19dc2431beaad05417bb"
+  integrity sha1-X0u9qRW6bUErCxncJDG+qtBUF7s=
+  dependencies:
+    tslib "2.3.0"
+
+zrenderjs@3.0.0-beta5:
+  version "3.0.0-beta5"
+  resolved "https://registry.nlark.com/zrenderjs/download/zrenderjs-3.0.0-beta5.tgz#a828e30c44dc8cc75d4847f9735df14f5ce7433e"
+  integrity sha1-qCjjDETcjMddSEf5c13xT1znQz4=
